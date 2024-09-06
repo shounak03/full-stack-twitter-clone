@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import bcrypt from 'bcryptjs'
 import { v2 as cloudinary } from "cloudinary";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 export const getUserProfile = async (req, res) => {
   const { username } = req.params;
@@ -91,37 +92,87 @@ export const getSuggestedUsers = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-export const updateProfile = async(req,res)=>{
-    const {fullname,email,username,bio,link} = req.body;
-    let {profileImg,coverImg} = req.body;
-
+export const updateProfile = async (req, res) => {
+    const { fullname, email, username, bio, link } = req.body;
     const userId = req.user._id;
+
     try {
-        const user = await User.findById(userId);
-        if(profileImg){
-
-            // if(user.profileImg)
-                
-
-            // const upload = cloudinary.uploader.upload(profileImg)
-            profileImg = (await upload).secure_url
+        let user = await User.findById(userId);
+        if (!user) {
+            throw new ApiError(404, "User not found");
         }
-        if(coverImg){
-            const upload = cloudinary.uploader.upload(coverImg)
-            coverImg = (await upload).secure_url
+
+        let profileImg_url, coverImage_url;
+
+        if (req.files) {
+            profileImg_url = req.files.profileImg?.[0]?.path;
+            coverImage_url = req.files.coverImg?.[0]?.path;
         }
-        
+
+        let profileImg, coverImg;
+
+        if (profileImg_url) {
+            profileImg = await uploadOnCloudinary(profileImg_url);
+            if (!profileImg) {
+                throw new ApiError(500, "Error uploading profile image");
+            }
+            if (user.profileImg) {
+                await cloudinary.uploader.destroy(user.profileImg.split('/').pop().split(".")[0]);
+            }
+        }
+
+        if (coverImage_url) {
+            coverImg = await uploadOnCloudinary(coverImage_url);
+            if (!coverImg) {
+                throw new ApiError(500, "Error uploading cover image");
+            }
+            if (user.coverImg) {
+                await cloudinary.uploader.destroy(user.coverImg.split('/').pop().split(".")[0]);
+            }
+        }
+
+        // Update user fields
+        user.fullname = fullname || user.fullname;
+        user.email = email || user.email;
+        user.username = username || user.username;
+        user.bio = bio || user.bio;
+        user.link = link || user.link;
+        user.profileImg = profileImg?.url || user.profileImg;
+        user.coverImg = coverImg?.url || user.coverImg;
+
+        // Save the updated user
+        await user.save();
+
+        // Return the updated user (excluding sensitive information)
+        const updatedUser = user.toObject();
+        delete updatedUser.password;
+
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            user: updatedUser
+        });
+
     } catch (error) {
-        
+        console.error("Error updating profile:", error);
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "An error occurred while updating the profile"
+        });
     }
-}
+};
 export const updatePassword = async(req,res)=>{
+    
     const {currPassword,newPassword} = req.body;
+    console.log(newPassword);
+    
 
 
     const userId = req.user._id;
     try {
         const user = await User.findById(userId);
+        console.log(user);
+        
         if(!user)
             return res.status(404).json({message:"User not found"});
 
@@ -134,15 +185,15 @@ export const updatePassword = async(req,res)=>{
         if(newPassword.length<6){
             return res.status(400).json({message:"password too short"});
         }
-        const salt = await bcrypt.genSalt(newPassword,10);
-        user.password = await bcrypt.hash(newPassword,salt);
+        const salt =  bcrypt.genSalt(10);
+        user.password = bcrypt.hash(newPassword,salt);
+        
+        await user.save({validateBeforeSave:false})
         res.status(200).json({message:"password Updated successfully"})
 
-        await user.save({validateBeforeSave:false})
-
     } catch (error) {
-        console.log(err);
-        
+        console.log("something went wrong:", error.message);
+        res.status(500).json({ error: error.message });
     }
 }
   
