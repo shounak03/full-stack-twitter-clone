@@ -49,7 +49,21 @@ const userSchema = new Schema({
     link:{
         type:String,
         default:""
-    }
+    },
+    posts:[
+        {
+        type:Schema.Types.ObjectId,
+        ref:"Post",
+        default:[]
+        }
+    ],
+    likedPost:[
+        {
+            type:Schema.Types.ObjectId,
+            ref:"Post",
+            default:[]
+        }
+    ]
 
 },{timestamps:true})
 
