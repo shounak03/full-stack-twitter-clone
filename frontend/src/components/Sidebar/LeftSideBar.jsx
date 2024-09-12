@@ -34,11 +34,11 @@ const LeftSideBar = () => {
                 <MdOutlineExplore size="25px"/>
                 <h1 className='font-bold ml-2 text-lg'>Explore</h1>
             </div>
-            <div className='flex items-center mx-2 px-4 py-2 hover:bg-gray-200
+            <Link to='/notification' className='flex items-center mx-2 px-4 py-2 hover:bg-gray-200
                             hover:cursor-pointer rounded-full'>
                 <MdNotificationsActive size="25px"/>
                 <h1 className='font-bold ml-2 text-lg'>Notification</h1>
-            </div>
+            </Link>
             <Link to="/profile" className='flex items-center mx-2 px-4 py-2 hover:bg-gray-200
                             hover:cursor-pointer rounded-full'>
                 <FaRegUser size="25px"/>

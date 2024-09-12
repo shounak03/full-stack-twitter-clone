@@ -31,7 +31,7 @@ const RightSideBar = () => {
         {!isLoading && (
 
         <Link to={`/profile/${user.username}`} 
-              className='flex items-center justify-between my-3'>
+              className='flex items-center justify-between my-3 hover:bg-gray-300 rounded-full px-3 py-2'>
           <div className='flex w-full'>
             <div>
               <Avatar src={user.profileImg} googleId="118096717852922241760" size="42" round={true} />

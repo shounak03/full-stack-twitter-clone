@@ -44,7 +44,7 @@ const CreatePost = () => {
                     <div className='cursor-pointer hover:bg-gray-200 w-full text-center px-4 py-3'>
                         <h1 className='font-semibold text-gray-600 cursor-pointer text-lg'>For You</h1>
                     </div>
-                    <div className='cursor-pointer hover:bg-gray-200 w-full text-center px-4'>
+                    <div className='cursor-pointer hover:bg-gray-200 w-full text-center px-4 py-3'>
                         <h1 className='font-semibold text-gray-600 text-lg'>Following</h1>
                     </div>
                 </div>

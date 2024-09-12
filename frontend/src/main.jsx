@@ -7,6 +7,7 @@ import Profile from './components/Profile/Profile'
 import Login from './components/Auth/Login'
 import SignUp from './components/Auth/SignUp'
 import App from './App'
+import Notification from './components/notifications/Notification'
 
 
 // const router = createBrowserRouter(
@@ -31,7 +32,11 @@ const router = createBrowserRouter([
               {
                   path:'/Profile',
                   element:<Profile/>
-              }
+              },
+              {
+                  path:'/notification',
+                  element:<Notification/>
+              },
   
           ]
       },
