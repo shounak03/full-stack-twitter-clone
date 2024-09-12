@@ -121,10 +121,6 @@ const Profile = () => {
             <div className='m-4'>
               <p>{user.bio}</p>
             </div>
-            {/* <div className='m-4 flex items-center justify-start' >
-              <SlCalender />
-              <p className='pl-2 text-gray-600'>Joined August 2021</p>
-            </div> */}
             <div className='flex gap-2 flex-wrap'>
               {user?.link && (
                 <div className='flex gap-1 items-center ml-3'>
@@ -165,7 +161,7 @@ const Profile = () => {
             </div> */}
             <div className='flex w-full border-b border-gray-500 mt-4'>
 								<div
-									className='flex justify-center flex-1 p-3 hover:bg-secondary hover:bg-gray-200 transition duration-300 relative cursor-pointer'
+									className='flex justify-center flex-1 p-3  hover:bg-gray-200 transition duration-300 relative cursor-pointer'
 									onClick={() => setFeedType("posts")}
 								>
 									Posts
@@ -174,7 +170,7 @@ const Profile = () => {
 									)}
 								</div>
 								<div
-									className='flex justify-center flex-1 p-3 text-slate-500 hover:bg-gray-200 hover:bg-secondary transition duration-300 relative cursor-pointer'
+									className='flex justify-center flex-1 p-3 text-slate-500 hover:bg-gray-200  transition duration-300 relative cursor-pointer'
 									onClick={() => setFeedType("likes")}
 								>
 									<h1 className=' text-black '>Likes</h1>

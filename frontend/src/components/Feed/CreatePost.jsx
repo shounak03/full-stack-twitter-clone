@@ -54,7 +54,7 @@ const CreatePost = () => {
                             <Avatar src="/public/boy3.png" googleId="118096717852922241760" size="38" round={true} className='m-2' />
                         </div>
                         <input
-                            className="textarea w-full outline-none border-none text-lg ml-4 bg-gray-200 text-black"
+                            className="w-full outline-none border-none text-lg ml-4 bg-gray-200 text-black"
                             placeholder='What is happening?!'
                             value={text}
                             onChange={(e) => setText(e.target.value)}

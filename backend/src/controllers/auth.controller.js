@@ -93,11 +93,11 @@ const login = async(req,res)=>{
     try {
         const {username, password} = req.body
 
-        console.log(password);
+        // console.log(password);
         
         
         const user = await User.findOne({username});
-        console.log(user?.password);
+
         
 
         const isPassCorrect = await bcrypt.compare(password,user?.password)

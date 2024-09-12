@@ -1,60 +1,98 @@
-import React, { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { createBrowserRouter, createRoutesFromElements, Route, Router, RouterProvider } from 'react-router-dom'
-import './index.css'  // or whatever your CSS file is named
-import Feed from './components/Feed/Feed'
-import Profile from './components/Profile/Profile'
-import Login from './components/Auth/Login'
-import SignUp from './components/Auth/SignUp'
-import App from './App'
-import Notification from './components/notifications/Notification'
+// import React from 'react'
+
+// import Feed from './components/Feed/Feed'
+// import Profile from './components/Profile/Profile'
+// import Notification from './components/notifications/Notification'
+// import Login from './components/Auth/Login'
+// import SignUp from './components/Auth/SignUp'
+// import App from './App'
+
+// import { createRoot } from 'react-dom/client'
+// import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+// import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+// const queryClient = new QueryClient()
 
 
-// const router = createBrowserRouter(
-//   createRoutesFromElements(
-//     <Route path='/' element={<App/>}>
-//       <Route path="" element={<Feed/>}/>
-//       <Route path="profile" element={<Profile/>}/>
-//     </Route>
 
-//   )
-// )
+// const router = createBrowserRouter([
+//     {
+//         path: '/',
+//         element: <App />,
+//         children: [
+//             {
+//                 path: '/',
+//                 element: <Feed />
+//             },
+//             {
+//                 path: '/profile',
+//                 element: <Profile />
+//             },
+//             {
+//                 path:'/notification',
+//                 element:<Notification/>
+//             },
+//         ]
+//     },
+//     {
+//         path: '/login',
+//         element: <Login />
+//     },
+//     {
+//         path: '/register',
+//         element: <SignUp />
+//     }
+// ])
 
-const router = createBrowserRouter([
-      {
-          path: '/',
-          element: <App/>,
-          children:[
-              {
-                  path:'/',
-                  element:<Feed/>
-              },
-              {
-                  path:'/Profile',
-                  element:<Profile/>
-              },
-              {
-                  path:'/notification',
-                  element:<Notification/>
-              },
-  
-          ]
-      },
-      {
-          path:'/login',
-          element:<Login/>
-      },
-      {
-        path:'/register',
-        element:<SignUp/>
-    }
-    ])
+// // Check if the root element exists
+// const rootElement = document.getElementById('root')
+// if (!rootElement) throw new Error('Failed to find the root element')
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+// // Check if a root already exists
+// const existingRoot = rootElement._reactRootContainer
+// if (existingRoot) {
+//     // If a root exists, use it to render
+//     existingRoot.render(
+//         <React.StrictMode>
+//             <QueryClientProvider client={queryClient}>
+//                 <RouterProvider router={router} />
+//                 <Toaster />
+//             </QueryClientProvider>
+//         </React.StrictMode>
+//     )
+// } else {
+//     // If no root exists, create a new one
+//     const root = createRoot(rootElement)
+//     root.render(
+//         <React.StrictMode>
+//             <QueryClientProvider client={queryClient}>
+//                 <RouterProvider router={router} />
+//             </QueryClientProvider>
+//         </React.StrictMode>
+//     )
+// }
 
-    <RouterProvider router={router}/>
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-    
-  </StrictMode>,
-)
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+		},
+	},
+});
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+	<React.StrictMode>
+		<BrowserRouter>
+			<QueryClientProvider client={queryClient}>
+				<App />
+			</QueryClientProvider>
+		</BrowserRouter>
+	</React.StrictMode>
+);
