@@ -29,7 +29,8 @@ const Login = () => {
       }
     },
     onSuccess:()=>{
-      
+      toast.success("Logged in Successfully")
+      queryClient.invalidateQueries({queryKey:["authUser"]});
     }
   })
 
