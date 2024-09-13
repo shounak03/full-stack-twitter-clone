@@ -13,11 +13,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const LeftSideBar = () => {
 
-  const user = {
-    fullname: "Levi San",
-    username: 'Goat',
-    profileImg: './public/boy3.png'
-  }
+
+  
   const queryClient = useQueryClient()
   const { mutate: logout, isError, isPending, error } = useMutation({
     mutationFn: async () => {
@@ -39,7 +36,7 @@ const LeftSideBar = () => {
   })
 
   const {data:authUser} = useQuery({queryKey:["authUser"]})
-  console.log(authUser);
+
   
 
   return (
@@ -63,7 +60,7 @@ const LeftSideBar = () => {
           <MdNotificationsActive size="25px" />
           <h1 className='font-bold ml-2 text-lg'>Notification</h1>
         </Link>
-        <Link to="/profile" className='flex items-center mx-2 px-4 py-2 hover:bg-gray-200
+        <Link to="/profile/:username" className='flex items-center mx-2 px-4 py-2 hover:bg-gray-200
                             hover:cursor-pointer rounded-full'>
           <FaRegUser size="25px" />
           <h1 className='font-bold ml-2 text-lg'>Profile</h1>

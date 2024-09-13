@@ -4,10 +4,12 @@ import Avatar from 'react-avatar'
 import { FaImages } from "react-icons/fa6";
 import { BsEmojiSmileFill } from "react-icons/bs";
 
+import Posts from './Posts';
+
 const CreatePost = () => {
     const [text, setText] = useState('');
     const [img, setImg] = useState(null);
-    
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!text.trim() && !img) {
@@ -35,19 +37,34 @@ const CreatePost = () => {
         }
     };
 
+    const [feedType, setFeedType] = useState("forYou")
+
     const imgRef = useRef(null);
 
     return (
         <div className='w-[100%]'>
             <div>
                 <div className='flex justify-around items-center border-b border-gray-200'>
-                    <div className='cursor-pointer hover:bg-gray-200 w-full text-center px-4 py-3'>
-                        <h1 className='font-semibold text-gray-600 cursor-pointer text-lg'>For You</h1>
+                    <div className='cursor-pointer hover:bg-gray-200 w-full text-center px-4 py-3'
+                        onClick={() => setFeedType("forYou")}>
+                        <h1 className='font-semibold text-gray-600 text-lg'>For You</h1>
+
+                        {feedType === "forYou" && (
+                            <div className='absolute mx-24 w-[7.5%]  h-1 rounded-full bg-primary'></div>
+                        )}
+
                     </div>
-                    <div className='cursor-pointer hover:bg-gray-200 w-full text-center px-4 py-3'>
+                    <div className='cursor-pointer hover:bg-gray-200 w-full text-center px-4 py-3'
+                        onClick={()=>setFeedType("following")}
+                    >
                         <h1 className='font-semibold text-gray-600 text-lg'>Following</h1>
+                        {feedType === "following" && (
+                            <div className='absolute w-[7.5%] mx-24 h-1 rounded-full bg-primary'></div>
+                        )}
+
                     </div>
                 </div>
+                
                 <div className='bg-gray-200' >
                     <div className='flex items-center justify-evenly' >
                         <div>
@@ -60,7 +77,7 @@ const CreatePost = () => {
                             onChange={(e) => setText(e.target.value)}
                         />
                     </div>
-                    
+
                     {img && (
                         <div className='relative w-72 ml-9'>
                             <IoCloseSharp
@@ -75,15 +92,15 @@ const CreatePost = () => {
                             <img src={img} className='p-2 mt-2 my-auto w-full h-72 object-contain rounded' alt="Selected" />
                         </div>
                     )}
-                    
+
                     <div className='flex items-center justify-between p-4 border-b border-gray-300 mt-7'>
                         <div className='cursor-pointer flex items-center justify-evenly'>
                             <FaImages size="25px" onClick={() => imgRef.current.click()} />
                             <BsEmojiSmileFill className='fill-primary w-5 h-5 cursor-pointer ml-2' />
                             <input type="file" accept='image/*' hidden ref={imgRef} onChange={handleImgChange} />
                         </div>
-                        <button 
-                            onClick={handleSubmit} 
+                        <button
+                            onClick={handleSubmit}
                             className='appearance-none bg-black border-2 border-[#1A1A1A] rounded-full box-border text-white cursor-pointer hover:bg-white hover:text-gray-950 font-semibold text-[16px] w-[80px] h-[30px]'
                         >
                             Post
@@ -91,6 +108,7 @@ const CreatePost = () => {
                     </div>
                 </div>
             </div>
+            <Posts feedType={feedType}/>
         </div>
     )
 }
