@@ -64,12 +64,14 @@ const likePost = async (req, res) => {
       let updatedPost;
   
       if (userLikedPost) {
-        updatedPost = await Post.findByIdAndUpdate(id, { $pull: { likes: userId } }, { new: true });
+        await Post.findByIdAndUpdate(id, { $pull: { likes: userId } }, { new: true });
         await User.updateOne({_id:userId},{$pull:{likedPost:id}});
-        return res.status(200).json(new ApiResponse(200, updatedPost, "Un-Liked"));
+        const updatedLikes = post.likes.filter((id)=>id.toString() === userId.toString());
+        return res.status(200).json(updatedLikes);
       } else {
-        updatedPost = await Post.findByIdAndUpdate(id, { $push: { likes: userId } }, { new: true });
+        await Post.findByIdAndUpdate(id, { $push: { likes: userId } }, { new: true });
         await User.updateOne({_id:userId},{$push:{likedPost:id}});
+       
       }
   
       const notification = new Notification({
@@ -79,7 +81,8 @@ const likePost = async (req, res) => {
       });
   
       await notification.save();
-      return res.status(200).json(new ApiResponse(200, updatedPost, "Liked"));
+      const updatedLikes = post.likes
+      return res.status(200).json(updatedLikes);
     } catch (error) {
       console.error("Error in likePost:", error);
       return res.status(500).json({ error: error.message || "An error occurred while liking the post" });
