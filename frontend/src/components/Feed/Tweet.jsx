@@ -25,7 +25,7 @@ const Tweet = ({ post }) => {
                 const res = await fetch(`/api/post/delete/${post._id}`,{
                     method:"DELETE",
                 })
-                const data = await res.json
+                const data = await res.json()
                 if(!res.ok){
                     throw new Error(data.error)
                 }
@@ -53,13 +53,14 @@ const Tweet = ({ post }) => {
     const handleLikePost = () => { };
 
 
+
     
     return (
         <div className='border-b border-gray-200'>
             <div >
                 <div className='flex p-4'>
                     <Link to={`profile/${postOwner.username}`}>
-                        <Avatar src={postOwner.profileImg || "./public/avatar-placeholder"} googleId="118096717852922241760" size="38" round={true} />
+                        <Avatar src={postOwner?.profileImg || "./public/avatar-placeholder.png"}  size="38" round={true} />
                     </Link>
 
                     <div className='ml-3 w-full'>

@@ -6,7 +6,7 @@ const router = Router();
 
 router.route('/all').get(protectRoute,getAllPost)
 router.route('/following').get(protectRoute,followingPost)
-router.route('/createPost').post(upload.single('img'),protectRoute,createPost)
+router.route('/createPost').post(protectRoute,upload.single('img'),createPost)
 router.route('/user/:username').get(protectRoute,getUserPost)
 router.route('/like/:id').post(protectRoute,likePost) //id - PostId
 router.route('/likes/:userId').get(protectRoute,getLikedPost)

@@ -6,47 +6,49 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { v2 as cloudinary } from "cloudinary";
 
-const createPost = async(req,res)=>{
-    let {text} = req.body;
+const createPost = async (req, res) => {
+    let { text } = req.body;
 
     try {
-        const userId = req.user._id
-        const user = await User.findById(userId)
-        if(!user){
-            throw new ApiError(404,"User not found")
-        }
-        let img_url;
-        if(req.file){
-            img_url = req.file?.path;
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new ApiError(404, "User not found");
         }
 
-        
+        let img_url;
+        if (req.file) {
+            img_url = req.file.path;
+        }
+
         let img;
-        if(img_url){
+        if (img_url) {
             img = await uploadOnCloudinary(img_url);
         }
-        if(!text && !img){
-            throw new ApiError(400,"Please enter text or image")
+
+        if (!text && !img) {
+            throw new ApiError(400, "Please enter text or image");
         }
+
         const newPost = new Post({
-            user:userId,
+            user: userId,
             text,
-            img:img?.url || ""
-        })
-        await newPost.save()
+            img: img?.url || ""
+        });
+
+        await newPost.save();
         await User.findByIdAndUpdate(
             userId,
             { $push: { posts: newPost._id } },
             { new: true, runValidators: true }
         );
 
-        return res.status(200).json(new ApiResponse(200,newPost,"Posted"))
+        return res.status(200).json(new ApiResponse(200, newPost, "Posted"));
     } catch (error) {
         console.log(error);
-        res.status(500).json({error:error.message})
-        
+        res.status(500).json({ error: error.message });
     }
-}
+};
 
 const likePost = async (req, res) => {
     try {
