@@ -13,7 +13,7 @@ const Profile = () => {
   const [feedType, setFeedType] = useState("posts")
 
   const coverImgRef = useRef(null);
-  const profileImgRef = useRef(null);
+  const profileImgRef = useRef(null);c
 
   const isLoading = false;
   const isMyProfile = true;

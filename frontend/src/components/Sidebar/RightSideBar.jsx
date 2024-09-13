@@ -3,7 +3,9 @@ import { IoIosSearch } from "react-icons/io";
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
 import RightPanelSkeleton from '../skeletons/RightPanelSkeleton';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import {  useQuery } from '@tanstack/react-query';
+import useFollow from '../Hooks/useFollow';
+import LoadingSpinner from '../common/LoadingSpinner';
 const RightSideBar = () => {
 
   // const user = {
@@ -27,7 +29,7 @@ const RightSideBar = () => {
     }
   })
 
-    console.log(suggestedUsers);
+  const {follow,isPending} = useFollow();
     
   
 
@@ -62,8 +64,11 @@ const RightSideBar = () => {
               </div>
             </div>
             <div className=' mt-1 px-13 '>
-              <button className='appearance-none hover:bg-white hover:text-gray-950 bg-black border-2 border-[#1A1A1A] rounded-full box-border text-white cursor-pointer inline-block font-sans font-semibold text-[16px] w-[80px] h-[30px]'>
-                follow</button>
+              <button className='appearance-none hover:bg-white hover:text-gray-950 bg-black border-2 border-[#1A1A1A] rounded-full box-border text-white cursor-pointer inline-block font-sans font-semibold text-[16px] w-[80px] h-[30px]'
+              onClick={(e) => {
+                e.preventDefault()
+                follow(user._id)}}>
+                {isPending?<LoadingSpinner/>: "follow"}</button>
             </div>
           </Link>
 
