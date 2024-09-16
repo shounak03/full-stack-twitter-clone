@@ -52,54 +52,63 @@ const createPost = async (req, res) => {
 
 const likePost = async (req, res) => {
     try {
-      const { id } = req.params;
-      const userId = req.user._id;
-      const post = await Post.findById(id);
-  
-      if (!post) {
-        throw new ApiError(404, "Post not found");
-      }
-  
-      const userLikedPost = post.likes.includes(userId);
-      let updatedPost;
-  
-      if (userLikedPost) {
-        await Post.findByIdAndUpdate(id, { $pull: { likes: userId } }, { new: true });
-        await User.updateOne({_id:userId},{$pull:{likedPost:id}});
-        const updatedLikes = post.likes.filter((id)=>id.toString() === userId.toString());
-        return res.status(200).json(updatedLikes);
-      } else {
-        await Post.findByIdAndUpdate(id, { $push: { likes: userId } }, { new: true });
-        await User.updateOne({_id:userId},{$push:{likedPost:id}});
-       
-      }
-  
-      const notification = new Notification({
-        from: userId,
-        to: post.user,
-        type: "like",
-      });
-  
-      await notification.save();
-      const updatedLikes = post.likes
-      return res.status(200).json(updatedLikes);
+        const { id } = req.params;
+        const userId = req.user._id;
+
+
+        const post = await Post.findById(id);
+        if (!post) {
+            throw new ApiError(404, "Post not found");
+        }
+
+        const userLikedPost = post.likes.includes(userId);
+        let updatedPost;
+
+        if (userLikedPost) {
+
+            updatedPost = await Post.findByIdAndUpdate(
+                id,
+                { $pull: { likes: userId } },
+                { new: true } 
+            );
+            await User.updateOne({ _id: userId }, { $pull: { likedPost: id } });
+        } else {
+
+            updatedPost = await Post.findByIdAndUpdate(
+                id,
+                { $push: { likes: userId } },
+                { new: true } 
+            );
+            await User.updateOne({ _id: userId }, { $push: { likedPost: id } });
+
+
+            const notification = new Notification({
+                from: userId,
+                to: post.user,
+                type: "like",
+            });
+            await notification.save();
+        }
+        return res.status(200).json(updatedPost);
     } catch (error) {
-      console.error("Error in likePost:", error);
-      return res.status(500).json({ error: error.message || "An error occurred while liking the post" });
+        console.error("Error in likePost:", error);
+        return res.status(500).json({ error: error.message || "An error occurred while liking the post" });
     }
 };
+
   
 
 const commentOnPost = async (req, res) => {
     try {
         const { text } = req.body;
-        const { id } = req.params.id;
+        const { id } = req.params;
         const userId = req.user._id;
 
         if (!text) {
             return res.status(400).json({ error: "Please enter text for the comment" });
         }
 
+        // Find the post by ID
         const post = await Post.findById(id);
         if (!post) {
             return res.status(404).json({ error: "Post not found" });
@@ -110,23 +119,20 @@ const commentOnPost = async (req, res) => {
             text: text
         };
 
-        const updatedPost = await Post.findByIdAndUpdate(
-            id,
-            { $push: { comments: newComment } },
-            { new: true, runValidators: true }
-        );
+        // Push the new comment to the post's comments array
+        post.comments.push(newComment);
+        // Save the post and get the updated document
+        const updatedPost = await post.save();
 
-        if (!updatedPost) {
-            return res.status(500).json({ error: "Failed to add comment" });
-        }
-
-        return res.status(200).json({ message: "Comment added successfully", comment: newComment });
+        // Return the updated post with all comments
+        return res.status(200).json(updatedPost);
 
     } catch (error) {
         console.error("Error in commentOnPost:", error);
         return res.status(500).json({ error: error.message || "An error occurred while posting the comment" });
     }
 }
+
 
 const deleatePost = async(req,res)=>{
     try {

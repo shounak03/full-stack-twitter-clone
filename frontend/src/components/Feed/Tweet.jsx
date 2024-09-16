@@ -19,8 +19,10 @@ const Tweet = ({ post }) => {
     const { data: authUser } = useQuery({ queryKey: ["authUser"] });
     const queryClient = useQueryClient()
     const isMyPost = authUser.data._id === post.user._id;
-    // const isLiked = post.likes.includes(authUser._id);
     const formattedDate = "1h";
+
+    //Mutation functions
+
     const { mutate: deletePost, isPending } = useMutation({
         mutationFn: async () => {
             try {
@@ -57,33 +59,70 @@ const Tweet = ({ post }) => {
                 throw new Error(error)
             }
         },
-        onSuccess: (updatedLikes) => {
-            
-            queryClient.setQueryData(["posts"],(oldData)=>{
-                return oldData.map((p)=>{
-                    if(p._id === post._id)
-                        return {...p,likes:updatedLikes}
-                    return p
-                })
-            })
+        onSuccess: (updatedPost) => {
+            queryClient.setQueryData(["posts"], (oldData) => {
+                return oldData.map((p) => {
+                    if (p._id === updatedPost._id) {
+                        return updatedPost;
+                    }
+                    return p;
+                });
+            });
             setIsLiked(prev => !prev);
-        },
+        },        
         onError: () => {
             toast.error("Something went wrong")
         }
 
     })
+   
+    const { mutate: commentOnPost, isPending: isCommenting } = useMutation({
+        mutationFn: async () => {
+            try {
+                const res = await fetch(`/api/post/comment/${post._id}`, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ text: comment })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || "Something went wrong");
+                }
+                return data; // Assuming this now returns the updated post
+            } catch (error) {
+                throw new Error(error);
+            }
+        },
+        onSuccess: (updatedPost) => {
+            toast.success("Comment posted successfully");
+            setComment("");
+    
+            // Update the posts cache with the new comment
+            queryClient.setQueryData(["posts"], (oldPosts) => {
+                return oldPosts.map((p) => {
+                    if (p._id === updatedPost._id) {
+                        // Replace the entire post with the updated one
+                        return updatedPost;
+                    }
+                    return p;
+                });
+            });
+        },
+        onError: () => {
+            toast.error("Something went wrong");
+        }
+    });
+    
 
-
-
-    const isCommenting = true;
-
+    //Handles
     const handleDeletePost = () => {
         deletePost();
     };
 
     const handlePostComment = (e) => {
         e.preventDefault();
+        if(isCommenting) return;
+        commentOnPost();
     };
 
     const handleLikePost = () => {
@@ -93,9 +132,6 @@ const Tweet = ({ post }) => {
     useEffect(() => {
         setIsLiked(post.likes.includes(authUser.data._id));
     }, [post.likes, authUser.data._id]);
-
-
-
 
     return (
         <div className='border-b border-gray-200'>
