@@ -43,7 +43,7 @@ const App = () => {
     )
   }
   return (
-		<div className='flex justify-between w-[90%] mx-auto mt-2'>
+		<div className='flex justify-between w-[90%] mx-auto mt-2 '>
 			{/* Common component, bc it's not wrapped with Routes */}
 			{authUser && <LeftSideBar />}
 			<Routes>
