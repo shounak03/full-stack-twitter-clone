@@ -7,7 +7,7 @@ export const getNotification = async(req,res)=>{
         const notification = await Notification.find({ to: userId}).populate({
             path:"from",
             select:"username profileImg"
-        })
+        }).sort({ createdAt: -1 }).limit(50) 
 
         await Notification.updateMany({to:userId},{read:true})
         return res.status(200).json(notification)
@@ -24,5 +24,6 @@ export const delNotification = async(req,res)=>{
         throw new ApiError(400,error?.message || "Something went wrong")
     }
 }
+
 
         

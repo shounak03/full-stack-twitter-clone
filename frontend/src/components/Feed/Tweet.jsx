@@ -121,11 +121,7 @@ const Tweet = ({ post }) => {
     const { mutate: getPostDetails } = useMutation({
         mutationFn: async () => {
             try {
-                const res = await fetch(`/api/post/${post._id}`, {
-                    method: "GET",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ text: comment })
-                });
+                const res = await fetch(`/api/post/${post._id}`);
                 const data = await res.json();
 
                 console.log(data);

@@ -64,21 +64,23 @@ const likePost = async (req, res) => {
         let updatedPost;
 
         if (userLikedPost) {
-            // Remove user ID from likes array
+
             await Post.findByIdAndUpdate(id, { $pull: { likes: userId } });
             await User.updateOne({ _id: userId }, { $pull: { likedPost: id } });
         } else {
-            // Add user ID to likes array
+
             await Post.findByIdAndUpdate(id, { $push: { likes: userId } });
             await User.updateOne({ _id: userId }, { $push: { likedPost: id } });
 
-            // Create a new notification for the post owner
-            const notification = new Notification({
-                from: userId,
-                to: post.user,
-                type: "like",
-            });
-            await notification.save();
+            if (userId.toString() !== post.user.toString()) {
+
+                const notification = new Notification({
+                    from: userId,
+                    to: post.user,
+                    type: "like",
+                });
+                await notification.save();
+            }
         }
 
         // Fetch the updated post with populated user information

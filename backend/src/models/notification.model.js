@@ -1,3 +1,4 @@
+
 import mongoose, { Schema } from "mongoose";
 const notiSchema = new Schema({
 
