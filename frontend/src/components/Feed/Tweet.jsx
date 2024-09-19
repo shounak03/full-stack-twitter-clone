@@ -44,6 +44,7 @@ const Tweet = ({ post }) => {
         }
 
     })
+    
     const { mutate: likePost, isPending: isLiking } = useMutation({
         mutationFn: async () => {
             try {
@@ -88,33 +89,74 @@ const Tweet = ({ post }) => {
                 if (!res.ok) {
                     throw new Error(data.error || "Something went wrong");
                 }
-                return data; // Assuming this now returns the updated post
+                return data; 
             } catch (error) {
                 throw new Error(error);
             }
         },
-        onSuccess: (updatedPost) => {
-            toast.success("Comment posted successfully");
-            setComment("");
-    
-            // Update the posts cache with the new comment
-            queryClient.setQueryData(["posts"], (oldPosts) => {
-                return oldPosts.map((p) => {
-                    if (p._id === updatedPost._id) {
-                        // Replace the entire post with the updated one
+        onSuccess: (response) => {
+            const { updatedPost, newComment } = response;
+
+            
+            
+            queryClient.setQueryData(['posts'], (oldData) => {
+                return oldData.map((post) => {
+                    if (post._id === updatedPost._id) {
+
                         return updatedPost;
                     }
-                    return p;
+                    return post;
                 });
             });
+
+
+            setComment("")
+            toast.success('Comment posted successfully');
         },
         onError: () => {
             toast.error("Something went wrong");
         }
     });
     
+    const { mutate: getPostDetails } = useMutation({
+        mutationFn: async () => {
+            try {
+                const res = await fetch(`/api/post/${post._id}`, {
+                    method: "GET",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ text: comment })
+                });
+                const data = await res.json();
 
-    //Handles
+                console.log(data);
+                
+                
+                if (!res.ok) {
+                    throw new Error(data.error || "Something went wrong");
+                }
+                return data;
+
+                
+            } catch (error) {
+                throw new Error(error);
+            }
+        },
+        onSuccess: (postDetails) => {
+            queryClient.setQueryData(["posts"], (oldData) => {
+                return oldData.map((p) => {
+                    if (p._id === postDetails._id) {
+                        return postDetails;
+                    }
+                    return p;
+                });
+            });
+
+        },
+        onError: () => {
+            toast.error("Cannot fetch post details");
+        }
+    });
+
     const handleDeletePost = () => {
         deletePost();
     };
@@ -129,6 +171,12 @@ const Tweet = ({ post }) => {
         if (isLiking) return
         likePost();
     };
+
+    const handlePostDetails = () => {
+        document.getElementById("comments_modal" + post._id).showModal()
+        getPostDetails()
+    }
+    
     useEffect(() => {
         setIsLiked(post.likes.includes(authUser.data._id));
     }, [post.likes, authUser.data._id]);
@@ -166,7 +214,8 @@ const Tweet = ({ post }) => {
                         <div className='flex justify-between my-3'>
                             <div className='flex  items-center'>
                                 <div className='p-2 hover:bg-gray-300 rounded-full cursor-pointer'
-                                    onClick={() => document.getElementById("comments_modal" + post._id).showModal()}>
+                                    onClick={handlePostDetails}
+                                    >
                                     <FaRegCommentAlt size="15px" />
                                 </div>
 
@@ -193,9 +242,9 @@ const Tweet = ({ post }) => {
                                                 </div>
                                                 <div className='flex flex-col'>
                                                     <div className='flex items-center gap-1'>
-                                                        <span className='font-bold'>{comment.user.fullName}</span>
+                                                        <span className='font-bold'>{comment?.user.fullName}</span>
                                                         <span className='text-gray-700 text-sm'>
-                                                            @{comment.user.username}
+                                                            @{comment?.user.username}
                                                         </span>
                                                     </div>
                                                     <div className='text-sm'>{comment.text}</div>

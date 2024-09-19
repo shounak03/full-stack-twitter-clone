@@ -55,7 +55,6 @@ const likePost = async (req, res) => {
         const { id } = req.params;
         const userId = req.user._id;
 
-
         const post = await Post.findById(id);
         if (!post) {
             throw new ApiError(404, "Post not found");
@@ -65,23 +64,15 @@ const likePost = async (req, res) => {
         let updatedPost;
 
         if (userLikedPost) {
-
-            updatedPost = await Post.findByIdAndUpdate(
-                id,
-                { $pull: { likes: userId } },
-                { new: true } 
-            );
+            // Remove user ID from likes array
+            await Post.findByIdAndUpdate(id, { $pull: { likes: userId } });
             await User.updateOne({ _id: userId }, { $pull: { likedPost: id } });
         } else {
-
-            updatedPost = await Post.findByIdAndUpdate(
-                id,
-                { $push: { likes: userId } },
-                { new: true } 
-            );
+            // Add user ID to likes array
+            await Post.findByIdAndUpdate(id, { $push: { likes: userId } });
             await User.updateOne({ _id: userId }, { $push: { likedPost: id } });
 
-
+            // Create a new notification for the post owner
             const notification = new Notification({
                 from: userId,
                 to: post.user,
@@ -89,6 +80,11 @@ const likePost = async (req, res) => {
             });
             await notification.save();
         }
+
+        // Fetch the updated post with populated user information
+        updatedPost = await Post.findById(id).populate('user', 'username profileImg fullname');
+
+        // Return the updated post with likes and user details
         return res.status(200).json(updatedPost);
     } catch (error) {
         console.error("Error in likePost:", error);
@@ -122,10 +118,25 @@ const commentOnPost = async (req, res) => {
         // Push the new comment to the post's comments array
         post.comments.push(newComment);
         // Save the post and get the updated document
-        const updatedPost = await post.save();
+        await post.save();
+        const updatedPost = await Post.findById(id).populate('user', 'username profileImg fullname');
 
         // Return the updated post with all comments
-        return res.status(200).json(updatedPost);
+        const populatedNewComment = await Post.findOne(
+            { 'comments._id': newComment._id },
+            { 'comments.$': 1 } // This projects only the new comment
+        ).populate({
+            path: 'comments.user', // Populate the user field in the comment
+            select: 'username fullName profileImg',
+        });
+
+        // Return the updated post with populated comments and the new comment
+        return res.status(200).json({ 
+            message: "Comment added successfully", 
+            updatedPost, 
+            newComment: populatedNewComment ? populatedNewComment.comments[0] : null,
+        });
+
 
     } catch (error) {
         console.error("Error in commentOnPost:", error);
@@ -255,4 +266,29 @@ const getUserPost = async(req,res)=>{
         
     }
 }
-export { createPost,likePost,commentOnPost,deleatePost, getAllPost, getLikedPost,followingPost, getUserPost}
+
+// Fetching a single post with populated comments
+const getPost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Find the post and populate the comments' user fields
+        const post = await Post.findById(id)
+            .populate({
+                path: 'comments.user',  // Populate the user field in comments
+                select: 'username fullName profileImg'  // Select the fields to include
+            });
+
+        if (!post) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
+        return res.status(200).json(post);
+    } catch (error) {
+        console.error("Error fetching post:", error);
+        return res.status(500).json({ error: error.message || "An error occurred while fetching the post" });
+    }
+};
+
+
+export { getPost ,createPost ,likePost ,commentOnPost ,deleatePost ,getAllPost ,getLikedPost ,followingPost ,getUserPost }
