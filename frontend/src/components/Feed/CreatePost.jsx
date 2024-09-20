@@ -89,7 +89,7 @@ const CreatePost = () => {
                         <h1 className='font-semibold text-gray-600 text-lg'>For You</h1>
 
                         {feedType === "forYou" && (
-                            <div className='absolute mx-24 w-[10%]  h-1 rounded-full bg-primary'></div>
+                            <div className='absolute mx-20 w-[7%]  h-1 rounded-full bg-primary'></div>
                         )}
 
                     </div>
@@ -98,7 +98,7 @@ const CreatePost = () => {
                     >
                         <h1 className='font-semibold text-gray-600 text-lg'>Following</h1>
                         {feedType === "following" && (
-                            <div className='absolute w-[7.5%] mx-24 h-1 rounded-full bg-primary'></div>
+                            <div className='absolute w-[7.5%] mx-20 h-1 rounded-full bg-primary'></div>
                         )}
 
                     </div>

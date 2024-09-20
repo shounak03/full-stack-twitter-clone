@@ -96,55 +96,80 @@ const likePost = async (req, res) => {
 
   
 
+// const commentOnPost = async (req, res) => {
+//     try {
+//         const { text } = req.body;
+//         const { id } = req.params;
+//         const userId = req.user._id;
+
+//         if (!text) {
+//             return res.status(400).json({ error: "Please enter text for the comment" });
+//         }
+
+//         // Find the post by ID
+//         const post = await Post.findById(id);
+//         if (!post) {
+//             return res.status(404).json({ error: "Post not found" });
+//         }
+
+//         const newComment = {
+//             user: userId,
+//             text: text
+//         };
+
+//         // Push the new comment to the post's comments array
+//         post.comments.push(newComment);
+//         // Save the post and get the updated document
+//         await post.save();
+//         const updatedPost = await Post.findById(id).populate('user', 'username profileImg fullname');
+
+//         // Return the updated post with all comments
+//         const populatedNewComment = await Post.findOne(
+//             { 'comments._id': newComment._id },
+//             { 'comments.$': 1 } // This projects only the new comment
+//         ).populate({
+//             path: 'comments.user', // Populate the user field in the comment
+//             select: 'username fullName profileImg',
+//         });
+
+//         // Return the updated post with populated comments and the new comment
+//         return res.status(200).json(updatedPost);
+//         // return res.status(200).json({ 
+//         //     message: "Comment added successfully", 
+//         //     updatedPost, 
+//         //     newComment: populatedNewComment ? populatedNewComment.comments[0] : null,
+//         // });
+
+
+//     } catch (error) {
+//         console.error("Error in commentOnPost:", error);
+//         return res.status(500).json({ error: error.message || "An error occurred while posting the comment" });
+//     }
+// }
 const commentOnPost = async (req, res) => {
     try {
-        const { text } = req.body;
         const { id } = req.params;
+        const { text } = req.body;
         const userId = req.user._id;
 
-        if (!text) {
-            return res.status(400).json({ error: "Please enter text for the comment" });
-        }
+        const updatedPost = await Post.findByIdAndUpdate(
+            id,
+            { $push: { comments: { text, user: userId } } },
+            { new: true, runValidators: true }
+        ).populate('user', 'username profileImg fullname')
+          .populate('comments.user', 'username profileImg fullname');
 
-        // Find the post by ID
-        const post = await Post.findById(id);
-        if (!post) {
+        if (!updatedPost) {
             return res.status(404).json({ error: "Post not found" });
         }
 
-        const newComment = {
-            user: userId,
-            text: text
-        };
-
-        // Push the new comment to the post's comments array
-        post.comments.push(newComment);
-        // Save the post and get the updated document
-        await post.save();
-        const updatedPost = await Post.findById(id).populate('user', 'username profileImg fullname');
-
-        // Return the updated post with all comments
-        const populatedNewComment = await Post.findOne(
-            { 'comments._id': newComment._id },
-            { 'comments.$': 1 } // This projects only the new comment
-        ).populate({
-            path: 'comments.user', // Populate the user field in the comment
-            select: 'username fullName profileImg',
-        });
-
-        // Return the updated post with populated comments and the new comment
-        return res.status(200).json({ 
-            message: "Comment added successfully", 
-            updatedPost, 
-            newComment: populatedNewComment ? populatedNewComment.comments[0] : null,
-        });
-
-
+        // Return the entire updated post
+        return res.status(200).json(updatedPost);
     } catch (error) {
         console.error("Error in commentOnPost:", error);
-        return res.status(500).json({ error: error.message || "An error occurred while posting the comment" });
+        return res.status(500).json({ error: error.message || "An error occurred while commenting on the post" });
     }
-}
+};
 
 
 const deleatePost = async(req,res)=>{
@@ -201,6 +226,7 @@ const getLikedPost = async(req,res)=>{
         if(!user)
             throw new ApiError(404,"user not found");
         const posts = await Post.find({ _id: { $in: user.likedPost } })
+            .sort({createdAt:-1})
             .populate({
                 path: "user",
                 select: "-password -email"
@@ -223,6 +249,8 @@ const followingPost = async(req,res)=>{
         const user = await User.findById(userId);
         if(!user)
             throw new ApiError(404,"user not found");
+        console.log(user.username);
+        
 
         const following = user.following;
 
@@ -234,7 +262,7 @@ const followingPost = async(req,res)=>{
         })
         .populate({
             path: "comments.user",
-            select: "-password, email"
+            select: "-password -email"
         })
 
         res.status(200).json(feedPosts)

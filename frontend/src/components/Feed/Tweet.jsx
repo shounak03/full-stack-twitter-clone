@@ -47,74 +47,105 @@ const Tweet = ({ post }) => {
     
     const { mutate: likePost, isPending: isLiking } = useMutation({
         mutationFn: async () => {
-            try {
-                const res = await fetch(`/api/post/like/${post._id}`, {
-                    method: "POST",
-                })
-                const data = await res.json()
-                if (!res.ok) {
-                    throw new Error(data.error || "Something went wrong")
-                }
-                return data
-            } catch (error) {
-                throw new Error(error)
+            const res = await fetch(`/api/post/like/${post._id}`, {
+                method: "POST",
+            });
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || "Failed to like post");
             }
+            return await res.json();
         },
-        onSuccess: (updatedPost) => {
-            queryClient.setQueryData(["posts"], (oldData) => {
-                return oldData.map((p) => {
-                    if (p._id === updatedPost._id) {
-                        return updatedPost;
+        onMutate: async () => {
+            // Cancel any outgoing refetches so they don't overwrite our optimistic update
+            await queryClient.cancelQueries(["posts"]);
+    
+            // Snapshot the previous value
+            const previousPosts = queryClient.getQueryData(["posts"]);
+    
+            // Optimistically update to the new value
+            queryClient.setQueryData(["posts"], (old) => {
+                if (!Array.isArray(old)) return old;
+                return old.map((p) => {
+                    if (p._id === post._id) {
+                        return { ...p, likes: [...p.likes, authUser.data._id] };
                     }
                     return p;
                 });
             });
+    
+            // Return a context object with the snapshotted value
+            return { previousPosts };
+        },
+        onSuccess: (updatedPost, variables, context) => {
+            queryClient.setQueryData(["post", updatedPost._id], updatedPost);
             setIsLiked(prev => !prev);
-        },        
-        onError: () => {
-            toast.error("Something went wrong")
-        }
-
-    })
+        },
+        onError: (error, variables, context) => {
+            console.error(error);
+            toast.error(error.message || "Something went wrong");
+            // If the mutation fails, use the context returned from onMutate to roll back
+            queryClient.setQueryData(["posts"], context.previousPosts);
+        },
+        onSettled: () => {
+            // Always refetch after error or success to ensure we have the latest data
+            queryClient.invalidateQueries(["posts"]);
+        },
+    });
    
     const { mutate: commentOnPost, isPending: isCommenting } = useMutation({
         mutationFn: async () => {
-            try {
-                const res = await fetch(`/api/post/comment/${post._id}`, {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ text: comment })
-                });
-                const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.error || "Something went wrong");
-                }
-                return data; 
-            } catch (error) {
-                throw new Error(error);
-            }
-        },
-        onSuccess: (response) => {
-            const { updatedPost, newComment } = response;
-
-            
-            
-            queryClient.setQueryData(['posts'], (oldData) => {
-                return oldData.map((post) => {
-                    if (post._id === updatedPost._id) {
-
-                        return updatedPost;
-                    }
-                    return post;
-                });
+            const res = await fetch(`/api/post/comment/${post._id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: comment })
             });
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to post comment");
+            }
+            return res.json();
+        },
+        onSuccess: (response, variables, context) => {
+            console.log("Server response:", response); // Log the entire response
+    
 
+            if (!response || typeof response !== 'object') {
+                console.error("Invalid response from server:", response);
+                toast.error("Unexpected server response");
+                return;
+            }
+    
 
-            setComment("")
+            const updatedPost = response.updatedPost || response;
+    
+
+    
+            if (!updatedPost || typeof updatedPost !== 'object' || !updatedPost._id) {
+                console.error("Invalid updated post data:", updatedPost);
+                toast.error("Failed to update post with new comment");
+                return;
+            }
+    
+
+            queryClient.setQueryData(["posts"], (oldPosts) => {
+                if (!Array.isArray(oldPosts)) return oldPosts;
+                return oldPosts.map((p) => p._id === updatedPost._id ? updatedPost : p);
+            });
+    
+
+            queryClient.setQueryData(["post", updatedPost._id], updatedPost);
+    
+            setComment("");
             toast.success('Comment posted successfully');
         },
-        onError: () => {
-            toast.error("Something went wrong");
+        onError: (error) => {
+            console.error("Error posting comment:", error);
+            toast.error(error.message || "Failed to post comment");
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries(["posts"]);
+            queryClient.invalidateQueries(["post", post._id]);
         }
     });
     
@@ -170,7 +201,7 @@ const Tweet = ({ post }) => {
 
     const handlePostDetails = () => {
         document.getElementById("comments_modal" + post._id).showModal()
-        getPostDetails()
+        // getPostDetails()
     }
     
     useEffect(() => {
