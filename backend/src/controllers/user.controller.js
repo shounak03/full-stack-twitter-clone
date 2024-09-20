@@ -50,14 +50,14 @@ export const followUnfollowUser = async (req, res) => {
         await User.findByIdAndUpdate(req.user._id,{
             $push:{following:id}
         })
-        res.status(200).json({message:"User followed Successfully"});
-
+        
         const newNotification = new Notification({
             type:"follow",
             from:req.user._id,
             to:userToModify._id
         })
         await newNotification.save();
+        return res.status(200).json({message:"User followed Successfully"});
     }
 
 
@@ -94,6 +94,7 @@ export const getSuggestedUsers = async (req, res) => {
 };
 export const updateProfile = async (req, res) => {
     const { fullname, email, username, bio, link } = req.body;
+    let {profileImg, coverImg} = req.body;
     const userId = req.user._id;
 
     try {
@@ -102,57 +103,41 @@ export const updateProfile = async (req, res) => {
             throw new ApiError(404, "User not found");
         }
 
-        let profileImg_url, coverImage_url;
+        if (profileImg) {
+			if (user.profileImg) {
 
-        if (req.files) {
-            profileImg_url = req.files.profileImg?.[0]?.path;
-            coverImage_url = req.files.coverImg?.[0]?.path;
-        }
+				await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
+			}
 
-        let profileImg, coverImg;
+			const uploadedResponse = await cloudinary.uploader.upload(profileImg);
+			profileImg = uploadedResponse.secure_url;
+		}
 
-        if (profileImg_url) {
-            profileImg = await uploadOnCloudinary(profileImg_url);
-            if (!profileImg) {
-                throw new ApiError(500, "Error uploading profile image");
-            }
-            if (user.profileImg) {
-                await cloudinary.uploader.destroy(user.profileImg.split('/').pop().split(".")[0]);
-            }
-        }
+		if (coverImg) {
+			if (user.coverImg) {
+				await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
+			}
 
-        if (coverImage_url) {
-            coverImg = await uploadOnCloudinary(coverImage_url);
-            if (!coverImg) {
-                throw new ApiError(500, "Error uploading cover image");
-            }
-            if (user.coverImg) {
-                await cloudinary.uploader.destroy(user.coverImg.split('/').pop().split(".")[0]);
-            }
-        }
+			const uploadedResponse = await cloudinary.uploader.upload(coverImg);
+			coverImg = uploadedResponse.secure_url;
+		}
+
 
         // Update user fields
         user.fullname = fullname || user.fullname;
-        user.email = email || user.email;
-        user.username = username || user.username;
-        user.bio = bio || user.bio;
-        user.link = link || user.link;
-        user.profileImg = profileImg?.url || user.profileImg;
-        user.coverImg = coverImg?.url || user.coverImg;
+		user.email = email || user.email;
+		user.username = username || user.username;
+		user.bio = bio || user.bio;
+		user.link = link || user.link;
+		user.profileImg = profileImg || user.profileImg;
+		user.coverImg = coverImg || user.coverImg;
 
-        // Save the updated user
-        await user.save();
+		user = await user.save();
 
-        // Return the updated user (excluding sensitive information)
-        const updatedUser = user.toObject();
-        delete updatedUser.password;
+		// password should be null in response
+		user.password = null;
 
-        res.status(200).json({
-            success: true,
-            message: "Profile updated successfully",
-            user: updatedUser
-        });
-
+		return res.status(200).json(user);
     } catch (error) {
         console.error("Error updating profile:", error);
         res.status(error.statusCode || 500).json({
@@ -164,7 +149,7 @@ export const updateProfile = async (req, res) => {
 export const updatePassword = async(req,res)=>{
     
     const {currPassword,newPassword} = req.body;
-    console.log(newPassword);
+
     
 
 

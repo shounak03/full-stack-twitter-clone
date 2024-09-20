@@ -7,7 +7,7 @@ import { AiOutlineRetweet } from "react-icons/ai";
 import { FaRegBookmark } from "react-icons/fa6";
 import { Link } from 'react-router-dom';
 import { FaTrash } from "react-icons/fa";
-import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../common/LoadingSpinner';
 
@@ -213,7 +213,7 @@ const Tweet = ({ post }) => {
             <div >
                 <div className='flex p-4'>
                     <Link to={`profile/${postOwner.username}`}>
-                        <Avatar src={postOwner?.profileImg || "./public/avatar-placeholder.png"} size="38" round={true} />
+                        <Avatar src={ postOwner?.profileImg || "./public/avatar-placeholder.png" } size="38" round={true} />
                     </Link>
 
                     <div className='ml-3 w-full'>

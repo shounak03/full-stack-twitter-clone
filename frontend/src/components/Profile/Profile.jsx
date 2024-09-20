@@ -9,7 +9,7 @@ import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkele
 import EditProfile from "./EditProfile";
 import Posts from "../Feed/Posts";
 import LoadingSpinner from "../common/LoadingSpinner";
-import useFollow from "../hooks/useFollow";
+import useFollow from "../hooks/useFollow"
 import useUpdateUserProfile from "../Hooks/useUpdateUserProfile";
 import { formatMemberSinceDate } from "../../utils";
 
@@ -47,10 +47,13 @@ const ProfilePage = () => {
 		},
 	});
 
-  
+	
+	
 	const { isUpdatingProfile, updateProfile } = useUpdateUserProfile();
 
-	const isMyProfile = authUser?._id === user?.data?._id;
+	const isMyProfile = authUser?.data._id === user?.data?._id;
+
+	
 	const memberSinceDate = formatMemberSinceDate(user?.data?.createdAt);
 	const amIFollowing = authUser?.data?.following?.includes(user?.data?._id);
 
@@ -133,7 +136,7 @@ const ProfilePage = () => {
 					{!isMyProfile && (
 						<button
 							className='btn btn-outline rounded-full btn-sm'
-							onClick={() => follow(user?.data?._id)}
+							onClick={() => follow(user?._id)}
 						>
 							{isPending ? <LoadingSpinner/> : (amIFollowing ? "Unfollow" : "Follow")}
 						</button>

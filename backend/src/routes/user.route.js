@@ -11,11 +11,11 @@ router.get('/suggested',protectRoute,getSuggestedUsers)
 router.get('/follow/:id',protectRoute,followUnfollowUser)
 
 router.route('/profile/updateProfile').post(
+  protectRoute,
     upload.fields([
       { name: 'profileImg', maxCount: 1 },
       { name: 'coverImg', maxCount: 1 }
     ]),
-    protectRoute,
     updateProfile
   );
 
