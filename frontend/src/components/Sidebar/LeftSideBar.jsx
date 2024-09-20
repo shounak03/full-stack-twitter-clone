@@ -60,7 +60,7 @@ const LeftSideBar = () => {
           <MdNotificationsActive size="25px" />
           <h1 className='font-bold ml-2 text-lg'>Notification</h1>
         </Link>
-        <Link to="/profile/:username" className='flex items-center mx-2 px-4 py-2 hover:bg-gray-200
+        <Link to={`/profile/${authUser?.data.username}`} className='flex items-center mx-2 px-4 py-2 hover:bg-gray-200
                             hover:cursor-pointer rounded-full'>
           <FaRegUser size="25px" />
           <h1 className='font-bold ml-2 text-lg'>Profile</h1>

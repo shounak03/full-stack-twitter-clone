@@ -237,7 +237,7 @@ const followingPost = async(req,res)=>{
             select: "-password, email"
         })
 
-        res.status(200).json(new ApiResponse(200,feedPosts))
+        res.status(200).json(feedPosts)
     } catch (error) {
         console.log("Error in followingPost controller: ",error);
         res.status(500).json({error:"internal server error"});   
@@ -263,13 +263,13 @@ const getUserPost = async(req,res)=>{
                 path: "comments.user",
                 select: "username profilePicture"
             });
-            res.status(200).json(new ApiResponse(200, posts));
+            res.status(200).json(posts);
     } catch (error) {
         
     }
 }
 
-// Fetching a single post with populated comments
+
 const getPost = async (req, res) => {
     try {
         const { id } = req.params;
